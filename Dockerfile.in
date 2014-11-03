@@ -29,8 +29,10 @@ RUN git clone "http://git.code.sf.net/p/itk-snap/src" itksnap
 RUN mkdir /opt/bin/itksnap-Release
 WORKDIR /opt/bin/itksnap-Release
 
+USER root
 RUN apt-get install -y libinsighttoolkit4-dev
 RUN apt-get install -y libvtk6-dev
 RUN apt-get install -y libqt5opengl5-dev
+USER user
 
 CMD ["/bin/bash"]
