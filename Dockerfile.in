@@ -25,7 +25,7 @@ USER user
 WORKDIR /opt
 
 WORKDIR /opt/src
-RUN git clone git://git.code.sf.net/p/itk-snap/src itksnap
+RUN git clone "http://git.code.sf.net/p/itk-snap/src" itksnap
 RUN mkdir /opt/bin/itksnap-Release
 WORKDIR /opt/bin/itksnap-Release
 
