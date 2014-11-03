@@ -6,16 +6,13 @@ FROM opengl-nvidia
 
 MAINTAINER Matt McCormick <matt.mccormick@kitware.com>
 
-# Update
 RUN apt-get update
 
-# Build tools
 RUN apt-get install -y build-essential
 RUN apt-get install -y git
 RUN apt-get install -y cmake-curses-gui
 RUN apt-get install -y ninja-build
 
-# Normal user
 RUN useradd -m user
 RUN echo 'root:root' | chpasswd
 RUN echo 'user:user' | chpasswd
@@ -27,13 +24,11 @@ RUN chown -R user:user /opt/bin
 USER user
 WORKDIR /opt
 
-# itksnap source and build.
 WORKDIR /opt/src
 RUN git clone git://git.code.sf.net/p/itk-snap/src itksnap
 RUN mkdir /opt/bin/itksnap-Release
 WORKDIR /opt/bin/itksnap-Release
 
-# Dependencies
 RUN apt-get install -y libinsighttoolkit4-dev
 RUN apt-get install -y libvtk6-dev
 RUN apt-get install -y libqt5opengl5-dev
