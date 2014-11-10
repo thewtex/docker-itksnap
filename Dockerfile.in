@@ -7,11 +7,11 @@ FROM opengl-nvidia
 MAINTAINER Matt McCormick <matt.mccormick@kitware.com>
 
 RUN apt-get update
-
 RUN apt-get install -y build-essential
 RUN apt-get install -y git
 RUN apt-get install -y cmake-curses-gui
 RUN apt-get install -y ninja-build
+RUN apt-get install -y wget
 
 RUN useradd -m user
 RUN echo 'root:root' | chpasswd
@@ -24,15 +24,42 @@ RUN chown -R user:user /opt/bin
 USER user
 WORKDIR /opt
 
+USER root
+RUN apt-get update
+RUN apt-get install -y libinsighttoolkit4-dev
+RUN apt-get install -y libxcb1 libxcb1-dev
+RUN apt-get install -y libx11-dev
+RUN apt-get install -y libgl1-mesa-dev
+RUN apt-get install -y libxt-dev libxft-dev
+RUN apt-get install -y python
+USER user
+WORKDIR /opt/src
+RUN wget "http://download.qt-project.org/official_releases/qt/5.3/5.3.2/single/qt-everywhere-opensource-src-5.3.2.tar.gz"
+RUN tar xvzf qt-everywhere-opensource-src-5.3.2.tar.gz
+WORKDIR /opt/src/qt-everywhere-opensource-src-5.3.2
+RUN ./configure -skip qtwebkit -skip qttools -skip qtmultimedia -opensource -confirm-license -qt-xcb
+RUN make -j3
+USER root
+RUN make install
+USER user
+WORKDIR /opt/src
+RUN wget "http://www.vtk.org/files/release/6.1/VTK-6.1.0.tar.gz"
+RUN tar xvzf VTK-6.1.0.tar.gz
+WORKDIR /opt/src/VTK-6.1.0
+RUN sed -i 's/\/\/#define\ GLX_GLXEXT_LEGACY/#define\ GLX_GLXEXT_LEGACY/g' Rendering/OpenGL/vtkXOpenGLRenderWindow.cxx
+WORKDIR /opt/bin
+RUN mkdir VTK-6.1.0
+WORKDIR /opt/bin/VTK-6.1.0
+RUN cmake -DCMAKE_BUILD_TYPE:STRING=Release -G Ninja ~/src/VTK-6.1.0
+RUN ninja
+USER root
+RUN ninja install
+
 WORKDIR /opt/src
 RUN git clone "http://git.code.sf.net/p/itk-snap/src" itksnap
 RUN mkdir /opt/bin/itksnap-Release
 WORKDIR /opt/bin/itksnap-Release
-
-USER root
-RUN apt-get install -y libinsighttoolkit4-dev
-RUN apt-get install -y libvtk6-dev
-RUN apt-get install -y libqt5opengl5-dev
-USER user
+RUN cmake -DCMAKE_BUILD_TYPE:STRING=Release -G Ninja ~/src/itksnap
+RUN ninja
 
 CMD ["/bin/bash"]
