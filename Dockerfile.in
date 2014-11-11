@@ -26,7 +26,6 @@ WORKDIR /opt
 
 USER root
 RUN apt-get update
-RUN apt-get install -y libinsighttoolkit4-dev
 RUN apt-get install -y libxcb1 libxcb1-dev
 RUN apt-get install -y libx11-dev
 RUN apt-get install -y libgl1-mesa-dev
@@ -37,7 +36,7 @@ WORKDIR /opt/src
 RUN wget "http://download.qt-project.org/official_releases/qt/5.3/5.3.2/single/qt-everywhere-opensource-src-5.3.2.tar.gz"
 RUN tar xvzf qt-everywhere-opensource-src-5.3.2.tar.gz
 WORKDIR /opt/src/qt-everywhere-opensource-src-5.3.2
-RUN ./configure -skip qtwebkit -skip qttools -skip qtmultimedia -opensource -confirm-license -qt-xcb
+RUN ./configure -no-c++11 -skip qtwebkit -skip qttools -skip qtmultimedia -opensource -confirm-license -qt-xcb
 RUN make -j3
 USER root
 RUN make install
@@ -50,7 +49,17 @@ RUN sed -i 's/\/\/#define\ GLX_GLXEXT_LEGACY/#define\ GLX_GLXEXT_LEGACY/g' Rende
 WORKDIR /opt/bin
 RUN mkdir VTK-6.1.0
 WORKDIR /opt/bin/VTK-6.1.0
-RUN cmake -DCMAKE_BUILD_TYPE:STRING=Release -G Ninja ~/src/VTK-6.1.0
+RUN cmake -DCMAKE_BUILD_TYPE:STRING=Release -G Ninja -DBUILD_SHARED:BOOL=ON ~/src/VTK-6.1.0
+RUN ninja
+USER root
+RUN ninja install
+USER user
+WORKDIR /opt/src
+RUN wget "http://sourceforge.net/projects/itk/files/itk/4.6/InsightToolkit-4.6.1.tar.xz/download" -O InsightToolkit-4.6.1.tar.xz
+RUN tar xvJf InsightToolkit-4.6.1.tar.xz
+RUN mkdir -p /opt/bin/InsightToolkit-4.6.1
+WORKDIR /opt/bin/InsightToolkit-4.6.1
+RUN cmake -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_TESTING:BOOL=OFF -DBUILD_SHARED:BOOL=ON -DBUILD_EXAMPLES:BOOL=OFF -G Ninja ~/src/InsightToolkit-4.6.1
 RUN ninja
 USER root
 RUN ninja install
@@ -61,7 +70,7 @@ WORKDIR /opt/src
 RUN git clone "http://git.code.sf.net/p/itk-snap/src" itksnap
 RUN mkdir /opt/bin/itksnap-Release
 WORKDIR /opt/bin/itksnap-Release
-RUN cmake -DCMAKE_BUILD_TYPE:STRING=Release -G Ninja -DCMAKE_PREFIX_PATH:PATH=/usr/local/Qt-5.3.2 ~/src/itksnap
+RUN cmake -DCMAKE_BUILD_TYPE:STRING=Release -G Ninja -DCMAKE_CXX_FLAGS:STRING=-fPIC -DCMAKE_PREFIX_PATH:PATH=/usr/local/Qt-5.3.2 ~/src/itksnap
 RUN ninja
 
 CMD ["/bin/bash"]
