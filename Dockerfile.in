@@ -55,11 +55,13 @@ RUN ninja
 USER root
 RUN ninja install
 
+RUN apt-get install -y libglu1-mesa-dev
+USER user
 WORKDIR /opt/src
 RUN git clone "http://git.code.sf.net/p/itk-snap/src" itksnap
 RUN mkdir /opt/bin/itksnap-Release
 WORKDIR /opt/bin/itksnap-Release
-RUN cmake -DCMAKE_BUILD_TYPE:STRING=Release -G Ninja ~/src/itksnap
+RUN cmake -DCMAKE_BUILD_TYPE:STRING=Release -G Ninja -DCMAKE_PREFIX_PATH:PATH=/usr/local/Qt-5.3.2 ~/src/itksnap
 RUN ninja
 
 CMD ["/bin/bash"]
