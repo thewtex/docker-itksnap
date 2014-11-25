@@ -1,5 +1,7 @@
 #ifdef NVIDIA
 FROM opengl-nvidia
+#elif MESA
+FROM opengl-mesa
 #else
 #error Unsupported OpenGL implementation.
 #endif
